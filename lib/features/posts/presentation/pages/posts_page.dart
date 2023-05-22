@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 
 import 'package:clean_architecture_bloc/features/posts/presentation/blocs/posts_bloc.dart';
 
@@ -12,10 +14,30 @@ class PostsPage extends StatefulWidget {
 }
 
 class _PostsPageState extends State<PostsPage> {
+  late StreamSubscription<ConnectivityResult> subscription;
+
   @override
   void initState() {
     super.initState();
-    context.read<PostsBloc>().add(GetPosts());
+
+    subscription = Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
+      if(result == ConnectivityResult.wifi) {
+        context.read<PostsBloc>().add(GetPosts());
+        ScaffoldMessenger.of(context).clearSnackBars();
+      } else {
+        const snackBar = SnackBar(
+          content: Text('Se perdió la conectividad Wi-Fi', style: TextStyle(),),
+          duration: Duration(days: 365),
+        );
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    subscription.cancel();
+    super.dispose();
   }
 
   @override

@@ -12,10 +12,11 @@ part 'posts_state.dart';
 class PostsBloc extends Bloc<PostsEvent, PostsState> {
   final GetPostsUsecase getPostsUsecase;
 
-  PostsBloc({required this.getPostsUsecase}) : super(Loading()) {
+  PostsBloc({required this.getPostsUsecase}) : super(Loaded(posts: [])) {
     on<PostsEvent>((event, emit) async {
       if(event is GetPosts) {
         try {
+          emit(Loading());
           List<Post> response = await getPostsUsecase.execute();
           emit(Loaded(posts: response));
         } catch (e) {
